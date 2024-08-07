@@ -1,5 +1,5 @@
 import "@/app/globals.css";
-import SideNav from "@/app/components/Sidenav";
+import SideNav from "../components/Sidenav";
  
 export default function Layout({ children }){
   return (

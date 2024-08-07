@@ -1,5 +1,5 @@
 import React from 'react'
-import AboutHeader from '../components/AboutHeader'
+import AboutHeader from '../components/AboutHeader';
 import Image from 'next/image';
 import gloriouslogo from '@/public/gloriouslogo.jpg';
 import "../globals.css";

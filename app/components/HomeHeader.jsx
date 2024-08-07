@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import "@/app/globals.css";
+import "../globals.css";
 import gloriouslogo from "@/public/gloriouslogo.jpg";
 import { BsCart4 } from "react-icons/bs";
 import {

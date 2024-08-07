@@ -1,8 +1,7 @@
+import BooksWithFilters from "./components/BooksWithFilters";
 
-import BooksWithFilters from "@/app/components/BooksWithFilters";
-
-import Footer from "@/app/components/Footer";
-import HomeHeader from "@/app/components/HomeHeader";
+import Footer from "./components/Footer";
+import HomeHeader from "./components/HomeHeader";
 export default function Home() {
   return (
     <div className="flex-1 overflow-x-hidden">

@@ -8,12 +8,12 @@ import {
   IoEarthOutline,
   IoDocumentsOutline,
 } from "react-icons/io5";
-import BuyForm from "@/app/components/BuyForm";
+import BuyForm from "../components/BuyForm";
 import { LuBookMarked } from "react-icons/lu";
 import { RxDimensions } from "react-icons/rx";
 import { RiBarcodeLine } from "react-icons/ri";
 import { FaStar, FaStarHalfAlt } from "react-icons/fa";
-import Modal from "@/app/components/Modal";
+import Modal from "../components/Modal";
 import Link from "next/link";
 
 const Book = () => {

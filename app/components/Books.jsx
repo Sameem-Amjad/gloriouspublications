@@ -1,9 +1,9 @@
 "use client";
 import React, { Suspense } from "react";
 import dynamic from "next/dynamic";
-import { BookSkeleton } from "@/app/components/Skeletons";
+import { BookSkeleton } from "./Skeletons";
 
-const BookCard = dynamic(() => import("@/app/components/BookCard"), {
+const BookCard = dynamic(() => import("./BookCard"), {
   loading: () => <BookSkeleton />,
   suspense: true,
 });

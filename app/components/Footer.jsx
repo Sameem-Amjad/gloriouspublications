@@ -1,6 +1,6 @@
 "use client";
 import React from 'react';
-import "@/app/globals.css";
+import "../globals.css";
 import { FaEnvelope, FaFacebook, FaPhone } from 'react-icons/fa';
 
 const Footer = () => {

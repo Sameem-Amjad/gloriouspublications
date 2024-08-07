@@ -1,5 +1,5 @@
 import React from "react"
-import Bookflip from "../../components/Bookflip"
+import Bookflip from "@/app/components/Bookflip"
 const page = () => {
   return (
     <div><Bookflip/></div>
