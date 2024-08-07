@@ -9,6 +9,7 @@ const BookCard = ({ frontImage, backImage, index, book }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [fade, setFade] = useState(false);
   const [cart, setCart] = useState([]);
+  const [showAlert, setShowAlert] = useState(false);
   useEffect(() => {
     let intervalId;
     if (isHovered) {
@@ -57,6 +58,11 @@ const BookCard = ({ frontImage, backImage, index, book }) => {
       className={`flex flex-col rounded-md bg-gray-50 p-2 sm:w-1/6 animate-slide-in w-[100%]`}
       style={{ animationDelay: `${index * 0.2}s` }}
     >
+      {showAlert && (
+        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-6 py-3 rounded-md shadow-lg z-50">
+          <p>Item added to cart successfully!</p>
+        </div>
+      )}
       <div className="flex sm:flex-col gap-2">
         <div
           className="relative w-full rounded-md overflow-hidden"
@@ -94,10 +100,10 @@ const BookCard = ({ frontImage, backImage, index, book }) => {
             </div>
             <div className="flex justify-between">
               <div
-                className="flex gap-1 items-center"
+                className="flex gap-1 items-center cursor-pointer "
                 onClick={() => addToCart(book)}
               >
-                <FaCartPlus className="text-2xl cursor-pointer" />
+                <FaCartPlus className="text-2xl " />
                 <h2>Add to Cart</h2>
               </div>
             </div>
