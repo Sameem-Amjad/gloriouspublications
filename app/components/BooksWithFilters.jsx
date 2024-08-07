@@ -1,10 +1,10 @@
 "use client";
 import React, { useState, useEffect, Suspense } from "react";
 import dynamic from "next/dynamic";
-import Categories from "./Categories";
+import Categories from "@/app/components/Categories";
 // import { IoFilter, IoSearch } from "react-icons/io5";
 
-const BookCard = dynamic(() => import("./BookCard"), {
+const BookCard = dynamic(() => import("@/app/components/BookCard"), {
   loading: () => <div>Loading...</div>,
   suspense: true,
 });

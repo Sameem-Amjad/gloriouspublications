@@ -1,9 +1,8 @@
 
-import BooksWithFilters from "./components/BooksWithFilters";
+import BooksWithFilters from "@/app/components/BooksWithFilters";
 
-import Footer from "./components/Footer";
-import HomeHeader from "./components/HomeHeader";
-import { IoSearch } from "react-icons/io5";
+import Footer from "@/app/components/Footer";
+import HomeHeader from "@/app/components/HomeHeader";
 export default function Home() {
   return (
     <div className="flex-1 overflow-x-hidden">

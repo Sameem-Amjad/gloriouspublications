@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import BuyForm from "../../components/BuyForm";
+import BuyForm from "@/app/components/BuyForm";
 
 const Cart = () => {
   const [cart, setCart] = useState([]);

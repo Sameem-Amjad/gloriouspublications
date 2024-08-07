@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import gloriouslogo from '@/public/gloriouslogo.jpg';
 import Image from 'next/image';
-import Navlinks from './Navlinks';
+import Navlinks from "@/app/components/Navlinks";
 import { FiPower} from "react-icons/fi";
 
 export default function SideNav() {

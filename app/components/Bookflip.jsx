@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import HTMLFlipBook from 'react-pageflip';
 import { GrLock } from "react-icons/gr";
-import "../globals.css";
+import "@/app/globals.css";
 import { HiOutlineShoppingBag } from "react-icons/hi2";
 
 const images = [
