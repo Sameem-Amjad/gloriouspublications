@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { HiOutlineBuildingOffice, HiOutlineShoppingBag } from "react-icons/hi2";
@@ -16,7 +16,7 @@ import { FaStar, FaStarHalfAlt } from "react-icons/fa";
 import Modal from "@/app/components/Modal";
 import Link from "next/link";
 
-const Main = () => {
+const Book = () => {
   const searchParams = useSearchParams();
   const bookString = searchParams.get("book");
   const book = bookString ? JSON.parse(bookString) : null;
@@ -226,4 +226,11 @@ const Main = () => {
   );
 };
 
-export default Main;
+function UserPageWrapper() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <Book />
+    </Suspense>
+  );
+}
+export default UserPageWrapper;
