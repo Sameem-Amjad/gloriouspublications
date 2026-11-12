@@ -1,92 +1,64 @@
 "use client";
-import React, { useState, useEffect, Suspense } from "react";
-import dynamic from "next/dynamic";
+import { useEffect, useMemo, useState } from "react";
+
+import BookCard from "./Bookcard";
 import Categories from "./Categories";
-// import { IoFilter, IoSearch } from "react-icons/io5";
 
-const BookCard = dynamic(() => import("./Bookcard"), {
-  loading: () => <div>Loading...</div>,
-  suspense: true,
-});
+const SORTS = {
+  title: (a, b) => a.title.localeCompare(b.title),
+  category: (a, b) => (a.category || "").localeCompare(b.category || "") || a.title.localeCompare(b.title),
+  newest: (a, b) => new Date(b.publicationDate || 0) - new Date(a.publicationDate || 0),
+  oldest: (a, b) => new Date(a.publicationDate || 0) - new Date(b.publicationDate || 0),
+  "price-low-to-high": (a, b) => a.price - b.price,
+  "price-high-to-low": (a, b) => b.price - a.price
+};
 
-const BooksWithFilters = () => {
-  const [books, setBooks] = useState([]);
+export default function BooksWithFilters() {
+  const [books, setBooks] = useState(null);
+  const [failed, setFailed] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [sortOption, setSortOption] = useState("title");
   const [searchQuery, setSearchQuery] = useState("");
-  const [filterFormat, setFilterFormat] = useState({
-    ebook: false,
-    hardCopy: false,
-  });
-  useEffect(() => {
-    const fetchBooks = async () => {
-      try {
-        const response = await fetch("/api/books");
-        const data = await response.json();
-        setBooks(data);
-      } catch (err) {
-        console.error(err);
-      }
-    };
+  const [filterFormat, setFilterFormat] = useState({ ebook: false, hardCopy: false });
 
-    fetchBooks();
+  useEffect(() => {
+    fetch("/api/books")
+      .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
+      .then(setBooks)
+      .catch(() => setFailed(true));
   }, []);
 
-  const handleSearchChange = (e) => {
-    setSearchQuery(e.target.value);
-  };
-
-  const filteredBooks = books
-    .filter((book) => {
-      if (selectedCategories.length === 0) return true;
-      return selectedCategories.includes(book.category);
-    })
-    .filter((book) =>
-      book.title.toLowerCase().includes(searchQuery.toLowerCase())
-    )
-    .filter((book) => {
-      if (!filterFormat.ebook && !filterFormat.hardCopy) return true;
-      if (filterFormat.ebook && book.bookFormat.includes("Paperback"))
-        return true;
-      if (filterFormat.hardCopy && book.bookFormat.includes("Hardcover"))
-        return true;
-      return false;
-    })
-    .sort((a, b) => {
-      if (sortOption === "title") return a.title.localeCompare(b.title);
-      if (sortOption === "price-low-to-high") return a.price - b.price;
-      if (sortOption === "price-high-to-low") return b.price - a.price;
-      return 0;
-    });
-
-  const categories = [
-    "Coming Soon",
-    "New Arrival",
-    "Children and Youth",
-    "Sacred Writings",
-    "Devotions",
-    "History",
-    "Introductory Books",
-  ];
+  const shown = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    return (books || [])
+      .filter((b) => selectedCategories.length === 0 || selectedCategories.includes(b.category))
+      .filter((b) => !q || b.title.toLowerCase().includes(q) || (b.author || "").toLowerCase().includes(q))
+      .filter((b) => {
+        if (!filterFormat.ebook && !filterFormat.hardCopy) return true;
+        const ebook = b.category !== "Coming Soon";
+        const hard = b.quantity > 0;
+        return (filterFormat.ebook && ebook) || (filterFormat.hardCopy && hard);
+      })
+      .sort(SORTS[sortOption] || SORTS.title);
+  }, [books, selectedCategories, searchQuery, filterFormat, sortOption]);
 
   return (
-    <div className="flex flex-col items-center ">
+    <div className="flex flex-col items-center">
       <div className="bg-custom-container w-full">
         <div className="bg-custom"></div>
         <div className="content p-8">
+          <label className="sr-only" htmlFor="book-search">Search books</label>
           <input
+            id="book-search"
             type="search"
-            className="border border-black px-3 py-3 rounded-lg w-2/3 sm:w-1/3 h-10"
-            placeholder="Search by title"
+            className="h-10 w-2/3 rounded-lg border border-black px-3 py-3 sm:w-1/3"
+            placeholder="Search by title or author"
             value={searchQuery}
-            onChange={handleSearchChange}
+            onChange={(e) => setSearchQuery(e.target.value)}
           />
-          {/* <button className="flex text-gray-800 text-3xl bg-white rounded-lg border border-black w-10 h-10 justify-center items-center sm:hover:bg-gray-800 sm:hover:text-white active:text-blue-700">
-            <IoSearch />
-          </button> */}
         </div>
       </div>
-      <div className="flex flex-col max-sm:items-center py-4 relative">
+      <div className="relative flex flex-col py-4 max-sm:items-center">
         <Categories
           selectedCategories={selectedCategories}
           setSelectedCategories={setSelectedCategories}
@@ -96,21 +68,19 @@ const BooksWithFilters = () => {
           setFilterFormat={setFilterFormat}
         />
       </div>
-      <div className="flex flex-wrap justify-center p-2 w-full gap-4">
-        <Suspense fallback={<div>Loading books...</div>}>
-          {filteredBooks.map((book, index) => (
-            <BookCard
-              key={index}
-              frontImage={book.frontCoverImage}
-              backImage={book.backCoverImage}
-              index={index}
-              book={book}
-            />
-          ))}
-        </Suspense>
+      <div className="flex w-full max-w-7xl flex-wrap justify-center gap-4 p-2 pb-12" aria-live="polite">
+        {failed ? (
+          <p className="py-10 text-gray-600">The catalogue couldn&apos;t be loaded. Please try again in a moment.</p>
+        ) : books === null ? (
+          <p className="py-10 text-gray-500">Loading books…</p>
+        ) : shown.length === 0 ? (
+          <p className="py-10 text-gray-600">
+            {selectedCategories.length ? `No titles in ${selectedCategories.join(", ")} yet.` : "No books match your search."}
+          </p>
+        ) : (
+          shown.map((book, index) => <BookCard key={book._id} book={book} index={index} />)
+        )}
       </div>
     </div>
   );
-};
-
-export default BooksWithFilters;
+}

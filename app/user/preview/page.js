@@ -1,9 +1,5 @@
-import React from "react"
-import Bookflip from "@/app/components/Bookflip"
-const page = () => {
-  return (
-    <div><Bookflip/></div>
-  )
-}
+import { redirect } from "next/navigation";
 
-export default page
+export default function LegacyPreview() {
+  redirect("/");
+}

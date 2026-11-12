@@ -1,117 +1,61 @@
 "use client";
-import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { FaCartPlus } from "react-icons/fa";
 
-const BookCard = ({ frontImage, backImage, index, book }) => {
-  const [currentImage, setCurrentImage] = useState(frontImage);
-  const [isHovered, setIsHovered] = useState(false);
-  const [fade, setFade] = useState(false);
-  const [cart, setCart] = useState([]);
-  const [showAlert, setShowAlert] = useState(false);
-  useEffect(() => {
-    let intervalId;
-    if (isHovered) {
-      intervalId = setInterval(() => {
-        setFade(true);
-        setTimeout(() => {
-          setCurrentImage((prevImage) =>
-            prevImage === frontImage ? backImage : frontImage
-          );
-          setFade(false);
-        }, 500);
-      }, 2000);
-    } else {
-      setCurrentImage(frontImage);
-      setFade(false);
-    }
-    return () => clearInterval(intervalId);
-  }, [isHovered, frontImage, backImage]);
+import { addToCart } from "@/lib/cart";
+
+/** A catalogue card; hovering flips between the front and back covers. */
+export default function BookCard({ book, index }) {
+  const [showBack, setShowBack] = useState(false);
+  const [hover, setHover] = useState(false);
+  const [added, setAdded] = useState(false);
+  const inStock = book.quantity > 0;
 
   useEffect(() => {
-    const storedCart = localStorage.getItem("cart");
-    if (storedCart) {
-      setCart(JSON.parse(storedCart));
+    if (!hover || !book.backCoverImage) {
+      setShowBack(false);
+      return;
     }
-  }, []);
+    const id = setInterval(() => setShowBack((b) => !b), 1800);
+    return () => clearInterval(id);
+  }, [hover, book.backCoverImage]);
 
-  const addToCart = (book) => {
-    const newCart = [...cart, book];
-    setCart(newCart);
-    localStorage.setItem("cart", JSON.stringify(newCart));
-    setShowAlert(true);
-    setTimeout(() => {
-      setShowAlert(false);
-    }, 2000); // Alert will be visible for 2 seconds
-  };
-  const handleMouseEnter = () => {
-    setIsHovered(true);
+  const add = () => {
+    addToCart(book, inStock ? "Hard copy" : "E-book");
+    setAdded(true);
+    setTimeout(() => setAdded(false), 1800);
   };
 
-  const handleMouseLeave = () => {
-    setIsHovered(false);
-  };
-  const bookQueryParams = `?book=${encodeURIComponent(JSON.stringify(book))}`;
   return (
-    <div
-      className={`flex flex-col rounded-md bg-gray-50 p-2 sm:w-1/6 animate-slide-in w-[100%]`}
-      style={{ animationDelay: `${index * 0.2}s` }}
-    >
-      {showAlert && (
-        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-6 py-3 rounded-md shadow-lg z-50">
-          <p>Item added to cart successfully!</p>
+    <div className="flex w-[46%] flex-col rounded-md bg-gray-50 p-2 shadow-sm animate-slide-in sm:w-[30%] lg:w-[18%]" style={{ animationDelay: `${index * 0.08}s` }}>
+      <Link href={`/books/${book.slug}`} className="relative block overflow-hidden rounded-md" onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
+        <Image
+          src={showBack ? book.backCoverImage : book.frontCoverImage}
+          alt={`${book.title} cover`}
+          width={300}
+          height={450}
+          className="h-auto w-full rounded-md transition-opacity duration-500"
+        />
+        {!inStock ? <span className="absolute left-2 top-2 rounded bg-amber-500 px-2 py-0.5 text-xs font-semibold text-white">{book.category === "Coming Soon" ? "Coming soon" : "E-book only"}</span> : null}
+      </Link>
+      <div className="flex flex-1 flex-col justify-between pt-2">
+        <div>
+          <Link href={`/books/${book.slug}`} className="block font-medium leading-snug hover:underline">{book.title}</Link>
+          <p className="text-sm text-blue-700">{book.author}</p>
         </div>
-      )}
-      <div className="flex sm:flex-col gap-2">
-        <div
-          className="relative w-full rounded-md overflow-hidden"
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
-        >
-          <Image
-            src={currentImage}
-            alt="Book Cover"
-            width={300}
-            height={400}
-            className={`rounded-md active:opacity-50 w-full sm:transition-opacity sm:duration-700 ${
-              fade ? "sm:opacity-0" : "sm:opacity-100"
-            }`}
-          />
-        </div>
-
-        <div className="flex flex-col justify-between">
-          <div>
-            <Link href={`/user${bookQueryParams}`}>
-              <h2 className="text-xl py-1">{book.title}</h2>
-            </Link>
-            <h2 className="text-red-600">
-              Author:{" "}
-              <span className="text-blue-600 font-semibold">{book.author}</span>
-            </h2>
-          </div>
-
-          <div>
-            <div className="flex gap-2 items-center">
-              <h2 className="text-2xl text-green-600">
-                $ {Math.floor(book.price)}
-              </h2>
-              <h2>E-book</h2>
-            </div>
-            <div className="flex justify-between">
-              <div
-                className="flex gap-1 items-center cursor-pointer "
-                onClick={() => addToCart(book)}
-              >
-                <FaCartPlus className="text-2xl " />
-                <h2>Add to Cart</h2>
-              </div>
-            </div>
-          </div>
+        <div className="mt-2 flex items-center justify-between">
+          <p className="text-lg text-green-700">${book.price} <span className="text-xs text-gray-500">e-book</span></p>
+          {book.category === "Coming Soon" ? (
+            <span className="text-xs text-amber-700">Coming soon</span>
+          ) : (
+            <button type="button" onClick={add} aria-label={`Add ${book.title} to cart`} className="flex items-center gap-1 rounded px-2 py-1 text-sm hover:bg-gray-200">
+              <FaCartPlus className="text-lg" /> {added ? "Added" : "Add"}
+            </button>
+          )}
         </div>
       </div>
     </div>
   );
-};
-
-export default BookCard;
+}

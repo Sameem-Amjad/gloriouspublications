@@ -1,28 +1,26 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
-const MONGODB_URI = process.env.MONGODB_URI;
+/**
+ * One cached connection per server instance (serverless functions reuse it
+ * between requests). MONGODB_DB picks the database; the original build used
+ * "restAPI".
+ */
+const cached = globalThis.__gloriousMongo || (globalThis.__gloriousMongo = { conn: null, promise: null });
 
-const connect = async ()=>{
-    const connectionState = mongoose.connection.readyState;
-    if(connectionState===1){
-        console.log("Already Connected");
-        return
-    }
-    if(connectionState===2){
-        console.log("Connecting...");
-        return
-    }
-    try{
-        await mongoose.connect(MONGODB_URI,{
-            dbName: "restAPI",
-            bufferCommands: false
-        })
-        console.log("Connected");
-    }
-    catch(err){
-        console.log(err);
-        throw new Error("Error connecting", err);
-    }
+export default async function connect() {
+  if (cached.conn) return cached.conn;
+  const uri = process.env.MONGODB_URI;
+  if (!uri) throw new Error("MONGODB_URI is not set");
+  cached.promise ||= mongoose.connect(uri, {
+    dbName: process.env.MONGODB_DB || "restAPI",
+    bufferCommands: false,
+    serverSelectionTimeoutMS: 10000
+  });
+  try {
+    cached.conn = await cached.promise;
+  } catch (err) {
+    cached.promise = null;
+    throw err;
+  }
+  return cached.conn;
 }
-
-export default connect;

@@ -47,12 +47,13 @@ const Categories = ({
   return (
     <div className="flex flex-col items-center py-4 relative">
       <div className="flex justify-center w-full">
-        <IoFilter
-          onClick={handleClick}
-          className={`text-3xl text-gray-800 transform transition-transform duration-500 ${
-            isRotated ? "rotate-180" : ""
-          }`}
-        />
+        <button type="button" onClick={handleClick} aria-label="Sort and filter" aria-expanded={isMenuOpen}>
+          <IoFilter
+            className={`text-3xl text-gray-800 transform transition-transform duration-500 ${
+              isRotated ? "rotate-180" : ""
+            }`}
+          />
+        </button>
       </div>
       <div
         className={`absolute rounded-3xl mt-8  text-white top-0  left-1/2 -translate-x-1/2 ${

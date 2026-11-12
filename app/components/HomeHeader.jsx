@@ -5,6 +5,7 @@ import Image from "next/image";
 import "../globals.css";
 import gloriouslogo from "@/public/gloriouslogo.jpg";
 import { BsCart4 } from "react-icons/bs";
+import { cartCount, readCart } from "@/lib/cart";
 import {
   HiOutlineMenuAlt1,
   HiOutlineShoppingBag,
@@ -15,7 +16,7 @@ import {
 const HomeHeader = () => {
   const [isRotated, setIsRotated] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [cartCount, setCartCount] = useState(0);
+  const [cartTotal, setCartCount] = useState(0);
 
   const handleClick = () => {
     setIsRotated(!isRotated);
@@ -23,36 +24,28 @@ const HomeHeader = () => {
   };
 
   useEffect(() => {
-    const updateCartCount = () => {
-      const storedCart = localStorage.getItem("cart");
-      if (storedCart) {
-        const cartItems = JSON.parse(storedCart);
-        setCartCount(cartItems.length);
-      } else {
-        setCartCount(0);
-      }
+    const sync = () => setCartCount(cartCount(readCart()));
+    sync();
+    // "cart-updated" covers this tab; "storage" covers other tabs.
+    window.addEventListener("cart-updated", sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener("cart-updated", sync);
+      window.removeEventListener("storage", sync);
     };
-
-    // Initial check
-    updateCartCount();
-
-    // Set up storage event listener
-    window.addEventListener("storage", updateCartCount);
-
-    // Clean up event listener on component unmount
-    return () => window.removeEventListener("storage", updateCartCount);
   }, []);
 
   return (
     <div className="relative z-50">
       <div className="bg-gray-800 flex flex-1 pr-[6%] pl-[5%] justify-between items-center py-2 w-full">
         <div className="flex text-white items-center gap-2 sm:gap-8">
-          <HiOutlineMenuAlt1
-            onClick={handleClick}
-            className={`text-3xl sm:hidden transform transition-transform duration-500 ${
-              isRotated ? "-rotate-180" : ""
-            }`}
-          />
+          <button type="button" onClick={handleClick} aria-label="Menu" aria-expanded={isMenuOpen} className="sm:hidden">
+            <HiOutlineMenuAlt1
+              className={`text-3xl transform transition-transform duration-500 ${
+                isRotated ? "-rotate-180" : ""
+              }`}
+            />
+          </button>
           <Link href="/">
             <Image
               src={gloriouslogo}
@@ -78,11 +71,11 @@ const HomeHeader = () => {
               About Us
             </h2>
           </Link>
-          <Link href="/user/cart" className="relative text-3xl hover:opacity-75">
+          <Link href="/cart" aria-label={`Cart, ${cartTotal} items`} className="relative text-3xl hover:opacity-75">
             <BsCart4 />
-            {cartCount > 0 && (
+            {cartTotal > 0 && (
               <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full px-2 py-1">
-                {cartCount}
+                {cartTotal}
               </span>
             )}
           </Link>
@@ -96,40 +89,15 @@ const HomeHeader = () => {
       >
         <h1 className="text-xl font-bold">Menu</h1>
         <hr className="border-gray-600" />
-        <h2 className="flex items-center gap-1 mt-2 text-2xl">Categories</h2>
-        <label className="flex items-center justify-between text-xl">
-          Coming Soon
-          <input type="checkbox" name="e-book" className="mr-2" />
-        </label>
-        <label className="flex items-center justify-between">
-          New Arrival
-          <input type="checkbox" name="e-book" className="mr-2" />
-        </label>
-        <label className="flex items-center justify-between">
-          Children and Youth
-          <input type="checkbox" name="e-book" className="mr-2" />
-        </label>
-        <label className="flex items-center justify-between">
-          Sacred Writings
-          <input type="checkbox" name="e-book" className="mr-2" />
-        </label>
-        <label className="flex items-center justify-between">
-          Devotions
-          <input type="checkbox" name="e-book" className="mr-2" />
-        </label>
-        <label className="flex items-center justify-between">
-          History
-          <input type="checkbox" name="e-book" className="mr-2" />
-        </label>
-        <label className="flex items-center justify-between">
-          Introductory Books
-          <input type="checkbox" name="e-book" className="mr-2" />
-        </label>
-        <hr className="border-gray-600" />
-        <h2 className="flex items-center gap-1 mt-4 active:text-blue-700">
+
+        <Link href="/" className="flex items-center gap-1 mt-4 active:text-blue-700" onClick={handleClick}>
           <HiOutlineShoppingBag />
-          Check Out
-        </h2>
+          <h2>Shop</h2>
+        </Link>
+        <Link href="/cart" className="flex items-center gap-1 mt-2 active:text-blue-700" onClick={handleClick}>
+          <BsCart4 />
+          <h2>Cart</h2>
+        </Link>
         <Link
           href="#footer"
           className="flex items-center gap-1 mt-2 active:text-blue-700"
